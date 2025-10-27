@@ -2,7 +2,7 @@
 Detailed description of my Mac setup, tools and config files. 
 Focus of my setup: Speed, low-friction interface with my computer.
 I want my computer to be an extension of my brain. I am optimizing for muscle memory and functionality.
-- **Last Updated**: 2025-06-19
+- **Last Updated**: 2025-10-27
 
 ---
 
@@ -20,8 +20,8 @@ I want my computer to be an extension of my brain. I am optimizing for muscle me
 ---
 
 ## Software
-- **Essentials**: Arc, Raycast, Spotify
-- **Tools**: Aerospace, CleanshotX, Wooshy, Hammerspoon, Karabiner Elements, Mac Whispr, Kinda Vim, Scrolla, Supercharge, Flux.
+- **Essentials**: Arc, Alacritty, Raycast, Spotify
+- **Tools**: Aerospace, tmux, CleanshotX, Wooshy, Hammerspoon, Karabiner Elements, Mac Whispr, Kinda Vim, Scrolla, Supercharge, Flux.
 - **Aesthetics**: Mediamate, Ice, Folder Preview
 - **Miscellaneous**: Cold Turkey, Whatsapp, 1Password, Cursor, Perplexity, Notion Calendar, Ollama, Logitech.
 - **Browser Extensions:** Vimium C, Video Speed Controller, Untrap for Youtube, Cold Turkey Blocker.
