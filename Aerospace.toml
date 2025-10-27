@@ -1,58 +1,32 @@
 start-at-login = true
+accordion-padding = 10
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+automatically-unhide-macos-hidden-apps = true
+enable-normalization-flatten-containers = false
 
-[workspace-to-monitor-force-assignment]        # force-maps, so workspaces never jump
-1 = 1
-2 = 2
+[workspace-to-monitor-force-assignment]
+1 = 'main'
+2 = 'secondary' 
+3 = 'secondary' 
+4 = 'secondary' 
+5 = 'main'
+6 = 'secondary' 
+7 = 'secondary' 
 
-# ------------------------------------------
-# 3 · Key bindings – main mode
 [mode.main.binding]
-ctrl-alt-cmd-shift-space = 'focus-monitor --wrap-around next'   # cycle focus between monitors :contentReference[oaicite:0]{index=0}
-ctrl-alt-cmd-shift-enter = 'focus right --boundaries-action wrap-around-the-workspace'
+ctrl-alt-cmd-shift-space = 'focus-monitor --wrap-around next' 
 ctrl-alt-cmd-shift-tab    = 'move-node-to-monitor --wrap-around --focus-follows-window next'
-ctrl-alt-cmd-shift-1      = 'focus-monitor 1'
-ctrl-alt-cmd-shift-2      = 'focus-monitor 2'
-ctrl-alt-cmd-shift-l      = ['fullscreen', 'balance-sizes']          # toggle max / 50-50
-ctrl-alt-cmd-shift-r      = 'mode resize'                            # enter resize mode
+# Hyper+; → maximize (tiling fullscreen)
+ctrl-alt-cmd-shift-semicolon = "fullscreen"
 
-# ------------------------------------------
-# 4 · Resize mode (Esc to leave)
-[mode.resize.binding]
-h      = 'resize smart -50'            # shrink current split
-l      = 'resize smart +50'            # grow
-esc = 'mode main'
-
-# ---------- 5 · Per-app rules ----------
-
-# 5.1 Raycast
-[[on-window-detected]]
-if.app-id                       = 'com.raycast.macos'
-if.window-title-regex-substring = 'AI Chat'
-run                             = 'layout tiling'
+ctrl-alt-cmd-shift-b = "workspace 1"
+ctrl-alt-cmd-shift-c = "workspace 2"
+ctrl-alt-cmd-shift-3 = "workspace 3" 
+ctrl-alt-cmd-shift-0 = "workspace 4" 
+ctrl-alt-cmd-shift-5 = "workspace 5"
+ctrl-alt-cmd-shift-6 = "workspace 6"
+ctrl-alt-cmd-shift-7 = "workspace 7"
 
 [[on-window-detected]]
-if.app-id = 'com.raycast.macos'
-run       = 'layout floating'
-
-# 5.2 Exclude apps from AeroSpace — they’ll **always** float
-#     (replace bundle-ids after `aerospace list-apps`)
-
-[[on-window-detected]]          # Time Machine UI
-if.app-name-regex-substring = 'Time Machine'
-run   = 'layout floating'
-
-[[on-window-detected]]
-if.app-id = 'com.apple.finder'
-run       = 'layout floating'
-
-[[on-window-detected]]          # System Settings / Preferences
-if.app-id = 'com.apple.Preferences'            # macOS 14+
-run     = 'layout floating'
-[[on-window-detected]]
-if.app-id = 'com.apple.systempreferences'      # macOS ≤13
-run     = 'layout floating'
-
-[[on-window-detected]]          # Tiles helper (catch-all)
-if.app-name-regex-substring = 'Tile'
-run     = 'layout tiling'
+check-further-callbacks = true
+run = "layout tiling"
