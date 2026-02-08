@@ -33,7 +33,7 @@ if [[ "$history_lines" -le 0 ]]; then
 fi
 
 selection="$(
-  tmux capture-pane -p -J -S "-$history_lines" -t "$pane_target" | \
+  tmux capture-pane -e -p -J -S "-$history_lines" -t "$pane_target" | \
     TMUX_COPY_PROMPT_REGEX="${TMUX_COPY_PROMPT_REGEX:-}" python3 <<'PY'
 import os
 import re
@@ -56,7 +56,7 @@ for line in lines:
 
 prompt_pattern = os.environ.get(
     "TMUX_COPY_PROMPT_REGEX",
-    r".*[%#$>\u276f\u203a\u03bb\u279c]\s*$",
+    r".*[%#$>\u276f\u203a\u03bb\u279c\uE0B0\uE0B1]\s*$",
 )
 
 try:

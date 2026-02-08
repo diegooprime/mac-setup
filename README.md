@@ -1,68 +1,158 @@
 # My Mac Setup
-Detailed description of my Mac setup, tools and config files. 
-Focus of my setup: Speed, low-friction interface with my computer.
-I want my computer to be an extension of my brain. I am optimizing for muscle memory and functionality.
-- **Last Updated**: 2025-10-27
+
+My development environment, optimized for speed and low-friction interaction.
+Keyboard-driven everything. Muscle memory over menus.
+
+**Last Updated**: 2026-02-08
+
+![desk](assets/desk.jpeg)
 
 ---
 
-## Hardware Configuration
+## Hardware
 
 | Component | Model |
 | :--- | :--- |
-| **Laptop** | MacBook Air M4 (15″, 16 GB RAM, 512 GB SSD) |
+| **Laptop** | MacBook Air M4 (15", 16 GB RAM, 512 GB SSD) |
 | **Keyboard** | MoErgo Glove80 |
 | **Mouse** | Logitech MX Master 3 |
-| **Display** | 1 × BenQ GW2480 |
-| **Audio** | AirPods Pro 2 |
-| **Ergonomics** | Standing Desk · Herman Miller Aeron B · Ugreen Dongles |
+| **Displays** | ASUS TUF Gaming VG27WQ3B (27" 1440p 180Hz) + BenQ GW2480 + MacBook |
+| **Audio** | Ugreen Headphones |
+| **Ergonomics** | Standing Desk, Herman Miller Aeron B |
 
 ---
 
 ## Software
-- **Essentials**: Arc, Alacritty, Raycast, Spotify
-- **Tools**: Aerospace, tmux, CleanshotX, Wooshy, Hammerspoon, Karabiner Elements, Mac Whispr, Kinda Vim, Scrolla, Supercharge, Flux.
-- **Aesthetics**: Mediamate, Ice, Folder Preview
-- **Miscellaneous**: Cold Turkey, Whatsapp, 1Password, Cursor, Perplexity, Notion Calendar, Ollama, Logitech.
-- **Browser Extensions:** Vimium C, Video Speed Controller, Untrap for Youtube, Cold Turkey Blocker.
+
+**Terminal Stack**: Alacritty + tmux + Neovim (NvChad) + Claude Code + Codex
+
+**Core Apps**: Arc, Raycast, Spotify
+
+**System Tools**: Aerospace (tiling WM), Karabiner Elements, CleanshotX, Monologue, MonitorControl, Bartender, Supercharge, Cold Turkey
+
+**CLI Power Tools**: bat, eza, fd, fzf, ripgrep, lazygit, delta, zoxide, yazi, bottom, dust, hyperfine
+
+**Browser Extensions**: Vimium C, Hotkey Router, Video Speed Controller, Untrap for YouTube, Cold Turkey Blocker
+
+**Raycast Extensions**: Spotify Player, CleanShot X, Aerospace, Arc, Notion, Gmail, Calendar, Pomodoro, Port Manager, System Monitor, Iconify, Paste as Plain Text, Remove Paywall, Remove Background (sips), CoinGecko, Fetch YouTube Transcript (custom), Fast WhatsApp (custom)
 
 ---
-## Config Files   
-- **Raycast**: `Raycast.rayconfig`
-- **Aerospace**: `Aerospace.toml`
-- **Hammerspoon**: `init.lua` and `work.toml`
-- **Karabiner-Elements**: `karabiner.json`
-- **Vimium C**: `vimiumC.json`
+
+## Custom Projects
+
+| Project | Description |
+| :--- | :--- |
+| [primeX](https://github.com/diegooprime/primeX) | Twitter client with vim-navigation, no distractions |
+| [primeyt](https://github.com/diegooprime/primeyt) | YouTube client with vim-like navigation, no distractions |
+| [fastytranscript](https://github.com/diegooprime/fastytranscript) | Raycast extension for instant YouTube transcripts |
+| [fastwhatsapp](https://github.com/diegooprime/fastwhatsapp) | Raycast extension for fast WhatsApp messages |
+| [hotkey_extension](https://github.com/diegooprime/hotkey_extension) | Chrome extension for unified hotkeys across AI chat sites |
+| [task_log](https://github.com/diegooprime/task_log) | Minimal floating task manager with vim keybindings |
 
 ---
 
-### Window Management (Aerospace & Karabiner)
+## Repo Structure
+
+Stow-compatible layout -- each directory mirrors `~/.config/` so you can symlink with `stow <package>`.
+
+```
+.
+├── Brewfile                        # brew bundle
+├── setup.sh                        # bootstrap script (brew + stow)
+├── aerospace/.config/aerospace/    # tiling window manager
+├── alacritty/.config/alacritty/    # terminal emulator
+├── tmux/.config/tmux/              # multiplexer + custom scripts
+├── nvim/.config/nvim/              # NvChad + lazy.nvim
+├── karabiner/.config/karabiner/    # keyboard remapping
+├── git/.config/git/                # git + delta config
+├── extras/                         # Raycast + Vimium C (manual import)
+└── assets/                         # images + keyboard layout firmware
+```
+
+### Quick Start
+
+```bash
+git clone https://github.com/diegooprime/mac-setup.git
+cd mac-setup
+chmod +x setup.sh
+./setup.sh
+```
+
+---
+
+## Keybindings
+
+`Hyper` = `Caps Lock` (remapped via Karabiner to Ctrl+Shift+Option+Cmd)
+
+### Window Management (Aerospace)
+
 | Hotkey | Action |
 | :--- | :--- |
-| `Hyper` + `Space` | Switch focus to next workspace/screen |
-| `Hyper` + `Tab` | Move current window to next workspace |
-| `Hyper` + `Enter` | Switch focus to next window in current workspace |
-| `Hyper` + `L` | Toggle maximize / half-screen layout |
-| `Hyper` + `J` | Cycle browser tabs |
-| `Hyper` + `K` | Cycle applications (Cmd+Tab alternative) |
+| `Hyper + Space` | Focus next monitor |
+| `Hyper + Tab` | Move window to next monitor |
+| `Hyper + ;` | Toggle fullscreen |
+| `Hyper + 1/2/C/6/7/8/0/N` | Switch to workspace 1-8 |
+| `Hyper + -` | Cycle workspaces |
+| `Hyper + U` | Vertical tile layout |
+| `Hyper + Z` | Horizontal tile layout |
 
-### Raycast AI & Utilities
+### Navigation (Karabiner)
+
 | Hotkey | Action |
 | :--- | :--- |
-| `Hyper` + `U` | Open Raycast AI Chat |
-| `Hyper` + `I` | Toggle Raycast Notes |
-| `Hyper` + `O` | Send screen content to Raycast AI |
-| `Hyper` + `P` | Execute "Rewrite" command |
-| `Hyper` + `V` | Open Clipboard History |
-| `Hyper` + `D` | Dictate with Whisper Flow |
-| `Hyper` + `G` | Open Finder |
-| `Hyper` + `S` | Take Screenshot |
+| `Hyper + H/J/K/L` | Vim navigation in Alacritty (Ctrl+hjkl for tmux/vim panes) |
+| `Hyper + M` | Cycle browser tabs (Ctrl+Tab) |
+| `Hyper + K` | Cycle applications (Cmd+Tab) |
+| `Hyper + D` | Monologue (Ctrl+Shift+K) |
+| `Hyper + Down/Up` | Left/Right arrow |
+| `F1/F2` | Volume (tap) / Brightness (with Hyper) |
+| `F19` | Hyper modifier (Glove80) |
+| `F20` | Tmux prefix (Ctrl+Space) |
 
-### Modal Editing & Navigation
-| Hotkey | Action | App |
-| :--- | :--- | :--- |
-| `Hyper` + `M` | Enter KindaVim mode | Kinda Vim |
-| `Hyper` + `N` | Enter Wooshy search | Wooshy |
-| `Hyper` + `Y` | Enter Scrolla mode | Scrolla |
+### Tmux (prefix: `Ctrl+Space`)
+
+| Key | Action |
+| :--- | :--- |
+| `n` | New window |
+| `t` | New named session |
+| `e` | Rename window |
+| `m` | Next session |
+| `Tab` | Next window |
+| `1-9, 0` | Select window 1-10 |
+| `Space` | Next pane |
+| `b / g` | Split vertical / horizontal |
+| `h/j/k/l` | Resize pane |
+| `w` | Kill pane |
+| `q` | Kill window |
+| `x` | Kill session |
+| `j` | Copy last Claude Code code block |
+| `k` | Code block picker (fzf popup) |
+| `Alt+D / Alt+V` | Copy last output block |
+| `Alt+Y / Alt+E` | Copy visible pane |
+
+### Neovim
+
+| Key | Action |
+| :--- | :--- |
+| `;` | Enter command mode |
+| `jk` | Escape (insert mode) |
+| `<leader>cp` | Copy current file path |
+| `<leader>cf` | Copy entire file |
+| `<leader>lg` | LazyGit |
+
+### Vimium C (Arc browser)
+
+| Key | Action |
+| :--- | :--- |
+| `e` | Link hints |
+| `E` | Open link in new tab |
+| `r` | Focus input |
+| `H / L` | Back / Forward |
 
 ---
+
+## Theme
+
+**Catppuccin Mocha** everywhere -- terminal, tmux status bar, git delta, NvChad (onedark variant).
+
+**Font**: JetBrainsMono Nerd Font (size 18)

@@ -1,22 +1,9 @@
-
-[general]
-live_config_reload = true
-working_directory = "/Users/p/Desktop/v"
-
 [bell]
 animation = "EaseOutExpo"
 duration = 0
 
 [colors]
 draw_bold_text_with_bright_colors = true
-
-[[colors.indexed_colors]]
-color = "0xF8BD96"
-index = 16
-
-[[colors.indexed_colors]]
-color = "0xF5E0DC"
-index = 17
 
 [colors.bright]
 black = "0x988BA2"
@@ -31,6 +18,14 @@ yellow = "0xFAE3B0"
 [colors.cursor]
 cursor = "0xF5E0DC"
 text = "0x1E1D2F"
+
+[[colors.indexed_colors]]
+color = "0xF8BD96"
+index = 16
+
+[[colors.indexed_colors]]
+color = "0xF5E0DC"
+index = 17
 
 [colors.normal]
 black = "0x6E6C7E"
@@ -56,7 +51,7 @@ blinking = "Off"
 shape = "Block"
 
 [env]
-TERM = "xterm-256color"
+TERM = "alacritty"
 
 [font]
 size = 18
@@ -79,6 +74,34 @@ style = "Regular"
 [font.offset]
 x = 0
 y = 0
+
+[general]
+live_config_reload = true
+
+[[keyboard.bindings]]
+chars = "\u001Ba"
+key = "A"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u001Bd"
+key = "D"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u001By"
+key = "Y"
+mods = "Command|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001Bv"
+key = "V"
+mods = "Command|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001Be"
+key = "E"
+mods = "Command|Shift"
 
 [mouse]
 hide_when_typing = true
@@ -104,24 +127,4 @@ lines = 80
 
 [window.padding]
 x = 4
-y = 4   
-[[keyboard.bindings]]
-key = "Up"
-action = "None"
-
-[[keyboard.bindings]]
-key = "Down"
-action = "None"
-
-[[keyboard.bindings]]
-key = "Left"
-action = "None"
-
-[[keyboard.bindings]]
-key = "Right"
-action = "None"
-
-[[keyboard.bindings]]
-key = "D"
-mods = "Command"
-chars = "\u001bd"
+y = 4
