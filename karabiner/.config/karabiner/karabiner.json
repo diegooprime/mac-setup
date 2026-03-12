@@ -239,7 +239,7 @@
                         ]
                     },
                     {
-                        "description": "Hyper+M → Ctrl-Tab | Hyper+K → Cmd-Tab | Hyper+D → Ctrl-Shift-K",
+                        "description": "Hyper+J → Ctrl-Tab | Hyper+K → Cmd-Tab",
                         "manipulators": [
                             {
                                 "from": {

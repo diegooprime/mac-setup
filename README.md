@@ -3,7 +3,7 @@
 My development environment, optimized for speed and low-friction interaction.
 Keyboard-driven everything. Muscle memory over menus.
 
-**Last Updated**: 2026-02-08
+**Last Updated**: 2026-03-12
 
 ![desk](assets/desk.jpeg)
 
@@ -26,15 +26,15 @@ Keyboard-driven everything. Muscle memory over menus.
 
 **Terminal Stack**: Alacritty + tmux + Neovim (NvChad) + Claude Code + Codex
 
-**Core Apps**: Arc, Raycast, Spotify
+**Core Apps**: Orion (Kagi), Raycast, Spotify
 
-**System Tools**: Aerospace (tiling WM), Karabiner Elements, CleanshotX, Monologue, MonitorControl, Bartender, Supercharge, Cold Turkey
+**System Tools**: Aerospace (tiling WM), Karabiner Elements, CleanshotX, MonitorControl, Hammerspoon, Cold Turkey
 
-**CLI Power Tools**: bat, eza, fd, fzf, ripgrep, lazygit, delta, zoxide, yazi, bottom, dust, hyperfine
+**CLI Power Tools**: bat, eza, fd, fzf, ripgrep, lazygit, delta, zoxide, yazi, bottom, dust, hyperfine, fabric
 
 **Browser Extensions**: Vimium C, Hotkey Router, Video Speed Controller, Untrap for YouTube, Cold Turkey Blocker
 
-**Raycast Extensions**: Spotify Player, CleanShot X, Aerospace, Arc, Notion, Gmail, Calendar, Pomodoro, Port Manager, System Monitor, Iconify, Paste as Plain Text, Remove Paywall, Remove Background (sips), CoinGecko, Fetch YouTube Transcript (custom), Fast WhatsApp (custom)
+**Raycast Extensions**: Spotify Player, CleanShot X, Aerospace, Orion, Notion, Gmail, Calendar, Pomodoro, Port Manager, System Monitor, Iconify, Paste as Plain Text, Remove Paywall, Remove Background (sips), CoinGecko, Fetch YouTube Transcript (custom), Fast WhatsApp (custom)
 
 ---
 
@@ -101,9 +101,8 @@ chmod +x setup.sh
 | Hotkey | Action |
 | :--- | :--- |
 | `Hyper + H/J/K/L` | Vim navigation in Alacritty (Ctrl+hjkl for tmux/vim panes) |
-| `Hyper + M` | Cycle browser tabs (Ctrl+Tab) |
+| `Hyper + J` | Cycle browser tabs (Ctrl+Tab) |
 | `Hyper + K` | Cycle applications (Cmd+Tab) |
-| `Hyper + D` | Monologue (Ctrl+Shift+K) |
 | `Hyper + Down/Up` | Left/Right arrow |
 | `F1/F2` | Volume (tap) / Brightness (with Hyper) |
 | `F19` | Hyper modifier (Glove80) |
@@ -125,10 +124,7 @@ chmod +x setup.sh
 | `w` | Kill pane |
 | `q` | Kill window |
 | `x` | Kill session |
-| `j` | Copy last Claude Code code block |
-| `k` | Code block picker (fzf popup) |
-| `Alt+D / Alt+V` | Copy last output block |
-| `Alt+Y / Alt+E` | Copy visible pane |
+| `f` | tmux-fingers (Vimium-style hint labels for copying) |
 
 ### Neovim
 

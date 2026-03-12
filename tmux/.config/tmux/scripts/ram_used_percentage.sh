@@ -13,7 +13,7 @@ print_from_tmux_cpu() {
 
 print_from_memory_pressure() {
   local free
-  free="$(memory_pressure -Q 2>/dev/null | awk -F': ' '/System-wide memory free percentage/ {gsub(/%/, "", $2); print $2; exit}')" || return 1
+  free="$(memory_pressure -Q 2>/dev/null | awk -F': ' '/System-wide memory free percentage/ {gsub(/%/, \"\", $2); print $2; exit}')" || return 1
   if [[ -z "$free" ]]; then
     return 1
   fi

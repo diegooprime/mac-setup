@@ -21,9 +21,9 @@ outer.bottom = 0
 8 = 2
 5 = 3
 6 = 3
-
+ 
 [mode.main.binding]
-ctrl-alt-cmd-shift-space = 'focus-monitor --wrap-around next'
+ctrl-alt-cmd-shift-space = 'focus-monitor --wrap-around next' 
 ctrl-alt-cmd-shift-tab    = 'move-node-to-monitor --wrap-around --focus-follows-window next'
 ctrl-alt-cmd-shift-semicolon = "fullscreen"
 ctrl-alt-cmd-shift-1 = ["workspace 1", "move-mouse monitor-lazy-center"]
@@ -38,16 +38,35 @@ ctrl-alt-cmd-shift-minus = "workspace --wrap-around next"
 ctrl-alt-cmd-shift-u = 'layout v_tiles'
 ctrl-alt-cmd-shift-z = 'layout h_tiles'
 
-[[on-window-detected]]
-check-further-callbacks = true
-run = "layout tiling"
+# --- Float rules FIRST (before catch-all tiling) ---
 
+# Orion: float empty-title windows (autocomplete dropdowns, popups)
+[[on-window-detected]]
+if.app-id = 'com.kagi.kagimacOS'
+if.window-title-regex-substring = '^$'
+check-further-callbacks = false
+run = 'layout floating'
+
+# Orion: float "Untitled" windows (dialogs, panels)
+[[on-window-detected]]
+if.app-id = 'com.kagi.kagimacOS'
+if.window-title-regex-substring = '^Untitled$'
+check-further-callbacks = false
+run = 'layout floating'
+
+# IINA: always float
 [[on-window-detected]]
 if.app-id = 'com.colliderli.iina'
 check-further-callbacks = false
-run = 'layout floating' # Keep IINA's player windows floating on every workspace
+run = 'layout floating'
 
+# Working Memory: always float
 [[on-window-detected]]
 if.app-id = 'com.workingmemory.tasks'
 check-further-callbacks = false
-run = 'layout floating' # Completely ignore Working Memory app
+run = 'layout floating'
+
+# --- Catch-all: tile everything else ---
+[[on-window-detected]]
+check-further-callbacks = false
+run = "layout tiling"
