@@ -7,18 +7,18 @@ PLUGIN_DIR="$HOME/.config/sketchybar/plugins"
 # ========================
 sketchybar --bar \
   height=32 \
-  color=0xcc1a1a1c \
-  border_color=0x222a2a2c \
-  border_width=1 \
-  corner_radius=11 \
-  y_offset=6 \
-  margin=6 \
+  color=0xff121214 \
+  border_color=0x00000000 \
+  border_width=0 \
+  corner_radius=0 \
+  y_offset=0 \
+  margin=0 \
   position=top \
   sticky=on \
   topmost=window \
   padding_left=10 \
   padding_right=10 \
-  blur_radius=25 \
+  blur_radius=0 \
   shadow=off
 
 # ========================

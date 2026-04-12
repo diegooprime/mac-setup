@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-borders active_color="0xaae05030" \
-        inactive_color="0x151a1a1c" \
-        width=3.0 \
+borders active_color="0x55e05030" \
+        inactive_color="0x00000000" \
+        width=2.0 \
         style=round \
-        hidpi=on
+        hidpi=on \
+        blacklist="Ghostty"
