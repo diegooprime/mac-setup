@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+source "$HOME/.config/palette/colors.sh"
+PLUGIN_DIR="$HOME/.config/sketchybar/plugins"
+
+# ========================
+# BAR — single floating pill
+# ========================
+sketchybar --bar \
+  height=32 \
+  color=0xcc1a1a1c \
+  border_color=0x222a2a2c \
+  border_width=1 \
+  corner_radius=11 \
+  y_offset=6 \
+  margin=6 \
+  position=top \
+  sticky=on \
+  topmost=window \
+  padding_left=10 \
+  padding_right=10 \
+  blur_radius=25 \
+  shadow=off
+
+# ========================
+# DEFAULTS
+# ========================
+sketchybar --default \
+  icon.color="$CF_SKB_WHITE" \
+  icon.font="JetBrainsMono Nerd Font:Bold:14.0" \
+  icon.padding_left=6 \
+  icon.padding_right=4 \
+  label.color="$CF_SKB_WHITE" \
+  label.font="JetBrainsMono Nerd Font:Regular:14.0" \
+  label.padding_left=4 \
+  label.padding_right=6 \
+  background.drawing=off \
+  popup.background.color="$CF_SKB_BG" \
+  popup.background.corner_radius=10 \
+  popup.background.border_color=0x222a2a2c \
+  popup.background.border_width=1 \
+  popup.background.shadow.drawing=on
+
+# ========================
+# AEROSPACE EVENT
+# ========================
+sketchybar --add event aerospace_workspace_change
+
+# ========================
+# LEFT: WORKSPACES
+# ========================
+for sid in 1 2 3 4 5 6 7 8; do
+  sketchybar --add item ws.$sid left \
+    --set ws.$sid \
+      icon="$sid" \
+      icon.font="JetBrainsMono Nerd Font:Bold:14.0" \
+      icon.color="$CF_SKB_BRIGHT" \
+      icon.padding_left=12 \
+      icon.padding_right=32 \
+      label.drawing=off \
+      padding_left=4 \
+      padding_right=4 \
+      background.drawing=off \
+      script="$PLUGIN_DIR/space.sh" \
+      click_script="aerospace workspace $sid" \
+    --subscribe ws.$sid aerospace_workspace_change
+done
+
+# ========================
+# LEFT: FRONT APP
+# ========================
+sketchybar --add item front_app left \
+  --set front_app \
+    icon.drawing=off \
+    label.color="$CF_SKB_WHITE" \
+    label.font="JetBrainsMono Nerd Font:Bold:14.0" \
+    label.padding_left=12 \
+    script="$PLUGIN_DIR/front_app.sh" \
+  --subscribe front_app front_app_switched
+
+# ========================
+# LEFT: MUSIC
+# ========================
+sketchybar --add item music left \
+  --set music \
+    icon="♫" \
+    icon.color="$CF_SKB_MUTED" \
+    icon.padding_left=14 \
+    label.color="$CF_SKB_MUTED" \
+    label.font="JetBrainsMono Nerd Font:Regular:12.0" \
+    label.max_chars=30 \
+    update_freq=10 \
+    script="$PLUGIN_DIR/music.sh"
+
+# ========================
+# RIGHT: TIMER
+# ========================
+sketchybar --add item timer right \
+  --set timer \
+    icon="⏱" \
+    icon.color="$CF_SKB_ACCENT" \
+    icon.font="JetBrainsMono Nerd Font:Regular:12.0" \
+    label.color="$CF_SKB_ACCENT" \
+    label.font="JetBrainsMono Nerd Font:Bold:12.0" \
+    drawing=off \
+    update_freq=1 \
+    script="$PLUGIN_DIR/timer_tick.sh"
+
+# ========================
+# RIGHT: CLOCK
+# ========================
+sketchybar --add item clock right \
+  --set clock \
+    icon.drawing=off \
+    label.color="$CF_SKB_WHITE" \
+    label.font="JetBrainsMono Nerd Font:Bold:14.0" \
+    label.padding_right=10 \
+    update_freq=30 \
+    script="$PLUGIN_DIR/clock.sh" \
+    click_script="$PLUGIN_DIR/timer_popup.sh"
+
+sketchybar --add item clock.t1 popup.clock \
+  --set clock.t1 icon.drawing=off label="  1 min" label.color="$CF_SKB_BRIGHT" \
+    label.font="JetBrainsMono Nerd Font:Regular:13.0" click_script="$PLUGIN_DIR/timer_start.sh 1"
+sketchybar --add item clock.t5 popup.clock \
+  --set clock.t5 icon.drawing=off label="  5 min" label.color="$CF_SKB_BRIGHT" \
+    label.font="JetBrainsMono Nerd Font:Regular:13.0" click_script="$PLUGIN_DIR/timer_start.sh 5"
+sketchybar --add item clock.t30 popup.clock \
+  --set clock.t30 icon.drawing=off label=" 30 min" label.color="$CF_SKB_BRIGHT" \
+    label.font="JetBrainsMono Nerd Font:Regular:13.0" click_script="$PLUGIN_DIR/timer_start.sh 30"
+sketchybar --add item clock.t60 popup.clock \
+  --set clock.t60 icon.drawing=off label=" 60 min" label.color="$CF_SKB_BRIGHT" \
+    label.font="JetBrainsMono Nerd Font:Regular:13.0" click_script="$PLUGIN_DIR/timer_start.sh 60"
+
+# ========================
+# RIGHT: DATE
+# ========================
+sketchybar --add item date right \
+  --set date \
+    icon.drawing=off \
+    label.color="$CF_SKB_TEXT" \
+    label.font="JetBrainsMono Nerd Font:Regular:13.0" \
+    update_freq=60 \
+    script="$PLUGIN_DIR/date.sh" \
+    click_script="$PLUGIN_DIR/calendar_popup.sh" \
+    popup.align=right
+
+CALFONT="JetBrainsMono Nerd Font:Bold:12.0"
+CALROW="JetBrainsMono Nerd Font:Regular:12.0"
+sketchybar --add item date.header popup.date \
+  --set date.header icon.drawing=off label.color="$CF_SKB_WHITE" \
+    label.font="$CALFONT" label.padding_left=8 label.padding_right=8
+sketchybar --add item date.wk popup.date \
+  --set date.wk icon.drawing=off label.color="$CF_SKB_MUTED" \
+    label.font="$CALROW" label.padding_left=8 label.padding_right=8
+for i in 1 2 3 4 5 6; do
+  sketchybar --add item date.r$i popup.date \
+    --set date.r$i icon.drawing=off label.color="$CF_SKB_BRIGHT" \
+      label.font="$CALROW" label.padding_left=8 label.padding_right=8
+done
+
+# ========================
+# RIGHT: WIFI
+# ========================
+sketchybar --add item wifi right \
+  --set wifi \
+    icon="󰖩" \
+    icon.font="JetBrainsMono Nerd Font:Regular:16.0" \
+    icon.color="$CF_SKB_WHITE" \
+    icon.padding_left=8 \
+    icon.padding_right=4 \
+    label.drawing=off \
+    update_freq=10 \
+    script="$PLUGIN_DIR/wifi.sh"
+
+# ========================
+# RIGHT: BATTERY
+# ========================
+sketchybar --add item battery right \
+  --set battery \
+    icon.drawing=off \
+    label.color="$CF_SKB_TEXT" \
+    label.font="JetBrainsMono Nerd Font:Regular:13.0" \
+    update_freq=30 \
+    script="$PLUGIN_DIR/battery.sh" \
+  --subscribe battery power_source_change system_woke
+
+# ========================
+# RIGHT: BLUETOOTH
+# ========================
+sketchybar --add item bluetooth right \
+  --set bluetooth \
+    icon="󰋋" \
+    icon.font="JetBrainsMono Nerd Font:Regular:16.0" \
+    icon.color="$CF_SKB_WHITE" \
+    icon.padding_left=6 \
+    icon.padding_right=6 \
+    label.drawing=off \
+    drawing=off \
+    update_freq=5 \
+    script="$PLUGIN_DIR/bluetooth.sh"
+
+# ========================
+# RIGHT: RAM
+# ========================
+sketchybar --add item ram right \
+  --set ram \
+    icon="MEM" \
+    icon.color="$CF_SKB_MUTED" \
+    icon.font="JetBrainsMono Nerd Font:Bold:10.0" \
+    icon.padding_right=4 \
+    label.color="$CF_SKB_WHITE" \
+    label.font="JetBrainsMono Nerd Font:Regular:13.0" \
+    label.padding_left=2 \
+    update_freq=10 \
+    script="$PLUGIN_DIR/ram.sh"
+
+# ========================
+# RIGHT: CPU
+# ========================
+sketchybar --add item cpu right \
+  --set cpu \
+    icon="CPU" \
+    icon.color="$CF_SKB_MUTED" \
+    icon.font="JetBrainsMono Nerd Font:Bold:10.0" \
+    icon.padding_right=4 \
+    label.color="$CF_SKB_WHITE" \
+    label.font="JetBrainsMono Nerd Font:Regular:13.0" \
+    label.padding_left=2 \
+    update_freq=5 \
+    script="$PLUGIN_DIR/cpu.sh"
+
+# ========================
+# INIT
+# ========================
+sketchybar --update

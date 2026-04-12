@@ -14,7 +14,7 @@ fi
 echo ""
 echo "==> Stowing config files..."
 
-PACKAGES=(aerospace alacritty tmux karabiner nvim git)
+PACKAGES=(aerospace alacritty tmux karabiner nvim git palette sketchybar borders ghostty fastfetch)
 
 for pkg in "${PACKAGES[@]}"; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
@@ -24,9 +24,22 @@ for pkg in "${PACKAGES[@]}"; do
 done
 
 echo ""
-echo "==> Making tmux scripts executable..."
+echo "==> Making scripts executable..."
 chmod +x "$HOME/.config/tmux/scripts/"*.sh 2>/dev/null || true
 chmod +x "$HOME/.config/tmux/scripts/"*.py 2>/dev/null || true
+chmod +x "$HOME/.config/sketchybar/sketchybarrc" 2>/dev/null || true
+chmod +x "$HOME/.config/sketchybar/plugins/"*.sh 2>/dev/null || true
+chmod +x "$HOME/.config/palette/"*.sh 2>/dev/null || true
+chmod +x "$HOME/.config/borders/bordersrc" 2>/dev/null || true
+
+echo ""
+echo "==> Generating configs from palette..."
+bash "$HOME/.config/palette/generate.sh"
+
+echo ""
+echo "==> Starting services..."
+brew services start sketchybar 2>/dev/null || true
+brew services start borders 2>/dev/null || true
 
 echo ""
 echo "==> Installing tmux plugins..."

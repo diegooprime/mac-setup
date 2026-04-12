@@ -1,0 +1,48 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "display": {
+    "separator": "  ",
+    "color": {
+      "keys": "red",
+      "output": "white"
+    }
+  },
+  "modules": [
+    {
+      "type": "os",
+      "key": "os",
+      "keyColor": "red"
+    },
+    {
+      "type": "host",
+      "key": "hw",
+      "keyColor": "red"
+    },
+    {
+      "type": "uptime",
+      "key": "up",
+      "keyColor": "red"
+    },
+    {
+      "type": "shell",
+      "key": "sh",
+      "keyColor": "red"
+    },
+    {
+      "type": "terminal",
+      "key": "tm",
+      "keyColor": "red"
+    },
+    {
+      "type": "memory",
+      "key": "mem",
+      "keyColor": "red"
+    },
+    {
+      "type": "disk",
+      "key": "dsk",
+      "keyColor": "red",
+      "folders": "/"
+    }
+  ]
+}

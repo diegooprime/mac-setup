@@ -47,6 +47,12 @@ brew "rclone"
 # System monitoring
 brew "bottom"
 brew "dust"
+brew "fastfetch"
+
+# Desktop rice
+tap "FelixKratz/formulae"
+brew "sketchybar"
+brew "borders"
 
 # Media & codecs
 brew "ffmpeg"
@@ -91,6 +97,7 @@ brew "pkgconf"
 # Casks
 cask "nikitabobko/tap/aerospace"
 cask "alacritty"
+cask "ghostty"
 cask "hammerspoon"
 cask "karabiner-elements"
 cask "cleanshot"
