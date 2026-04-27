@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 source "$HOME/.config/palette/colors.sh"
 
-# Check for connected audio devices
-HAS_AUDIO=$(system_profiler SPBluetoothDataType 2>/dev/null | awk '
-  /Connected:/{found=1; next}
-  /Not Connected:/{found=0}
-  found && /Minor Type: (Headset|Headphones)/{print "yes"; exit}
-')
+AUDIO_BIN="$HOME/.config/sketchybar/bin/current_audio_output"
+AUDIO_SRC="$HOME/.config/sketchybar/bin/current_audio_output.swift"
 
-if [ "$HAS_AUDIO" = "yes" ]; then
-  sketchybar --set "$NAME" drawing=on
+if [ ! -x "$AUDIO_BIN" ] || [ "$AUDIO_SRC" -nt "$AUDIO_BIN" ]; then
+  swiftc "$AUDIO_SRC" -o "$AUDIO_BIN" 2>/dev/null
+fi
+
+OUTPUT_INFO=$("$AUDIO_BIN" output 2>/dev/null)
+
+if [ "$OUTPUT_INFO" = "blue" ]; then
+  sketchybar --set "$NAME" drawing=on label.drawing=off
 else
-  sketchybar --set "$NAME" drawing=off
+  sketchybar --set "$NAME" drawing=off label.drawing=off
 fi
