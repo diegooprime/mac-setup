@@ -58,6 +58,7 @@ ctrl-alt-cmd-shift-space = 'focus-monitor --wrap-around next'
 ctrl-alt-cmd-shift-tab   = 'move-node-to-monitor --wrap-around --focus-follows-window next'
 
 # --- Layout ---
+cmd-m = 'macos-native-minimize'
 ctrl-alt-cmd-shift-semicolon = 'fullscreen'
 ctrl-alt-cmd-shift-u = 'layout v_tiles'
 ctrl-alt-cmd-shift-z = 'layout h_tiles'
@@ -154,19 +155,19 @@ run = 'move-node-to-workspace 1'
 [[on-window-detected]]
 if.app-id = 'com.mitchellh.ghostty'
 check-further-callbacks = false
-run = 'move-node-to-workspace 3'
+run = ['layout tiling', 'move-node-to-workspace 3']
 
 # Alacritty → workspace 3
 [[on-window-detected]]
 if.app-id = 'org.alacritty'
 check-further-callbacks = false
-run = 'move-node-to-workspace 3'
+run = ['layout tiling', 'move-node-to-workspace 3']
 
 # Obsidian → workspace 7
 [[on-window-detected]]
 if.app-id = 'md.obsidian'
 check-further-callbacks = false
-run = 'move-node-to-workspace 7'
+run = ['layout tiling', 'move-node-to-workspace 7']
 
 # WhatsApp → workspace 2, always left
 [[on-window-detected]]
