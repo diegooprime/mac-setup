@@ -1,0 +1,448 @@
+#!/bin/zsh
+# update — update everything in one go, then get back to work.
+#
+#   update            run everything (skips if it already ran in the last 12h)
+#   update -f         run anyway
+#   update -v         stream full output instead of one line per step
+#   sudo update       ask for your password once, up front, then never again
+#   update --models   also re-pull ollama models (big downloads)
+#   update --adopt    one-time: hand apps installed outside brew to brew so they update too
+#   update obsidian   run only the named steps (brew appstore claude codex npm bun uv
+#                     pipx rustup gh cursor hermes obsidian ollama macos)
+#
+# Config:  ~/.config/update/skip       cask tokens to never upgrade (one per line)
+#          ~/.config/update/env        extra env/PATH for this machine (sourced)
+#          UPDATE_COOLDOWN_HOURS=12    hours before another run is allowed
+# Logs:    ~/.local/state/update/logs/latest/<step>.log
+
+emulate -L zsh
+setopt no_nomatch extended_glob
+zmodload zsh/datetime
+
+STATE=${XDG_STATE_HOME:-$HOME/.local/state}/update
+CONF=${XDG_CONFIG_HOME:-$HOME/.config}/update
+COOLDOWN_H=${UPDATE_COOLDOWN_HOURS:-12}
+FORCE=0 VERBOSE=0 MODELS=0 ADOPT=0
+typeset -a ONLY
+
+for a in "$@"; do
+  case $a in
+    -f|--force)   FORCE=1 ;;
+    -v|--verbose) VERBOSE=1 ;;
+    --models)     MODELS=1 ;;
+    --adopt)      ADOPT=1 ;;
+    -h|--help)    sed -n '2,17p' $0 | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -*) print -u2 "update: unknown option $a (try -h)"; exit 64 ;;
+    *)  ONLY+=$a ;;
+  esac
+done
+
+# `sudo update`: brew, npm & co must not run as root, so drop straight back to
+# you. Your fresh sudo ticket comes along and is kept alive for the whole run.
+if (( EUID == 0 )); then
+  [[ -n $SUDO_USER && $SUDO_USER != root ]] || { print -u2 "update: run as your user (sudo update is fine)"; exit 1 }
+  exec sudo -u $SUDO_USER -H /usr/bin/env UPDATE_SUDO=1 TERM=$TERM ${0:A} "$@"
+fi
+
+# Same tool paths as your shell, so sudo and launchd runs find everything.
+path=(~/.local/bin ~/.bun/bin ~/.cargo/bin ~/Library/pnpm /opt/homebrew/bin /opt/homebrew/sbin
+      /usr/local/bin /usr/local/go/bin $path)
+typeset -U path
+# Machine-specific extras (e.g. a custom CARGO_HOME) go here, not in this script.
+[[ -f ${XDG_CONFIG_HOME:-$HOME/.config}/update/env ]] && source ${XDG_CONFIG_HOME:-$HOME/.config}/update/env
+
+# Scheduled runs (launchd) have no terminal: nothing can ask for a password,
+# and open apps are left alone so nothing quits in the middle of your day.
+[[ -t 0 || -t 1 ]] && HEADLESS=0 || HEADLESS=1
+
+export HOMEBREW_NO_ENV_HINTS=1 HOMEBREW_NO_INSTALL_CLEANUP=1
+export SUDO_PROMPT="  🔑 password (for installers that need admin): "
+
+if [[ -t 1 ]]; then
+  G=$'\e[32m' R=$'\e[31m' Y=$'\e[33m' D=$'\e[2m' B=$'\e[1m' N=$'\e[0m'
+else
+  G= R= Y= D= B= N=
+fi
+
+has() { (( $+commands[$1] )) }
+sum() { print -r -- "$*" >| $SUMF }
+
+# "a, b, c +2"
+names() {
+  (( $# )) || return
+  local out=${(j:, :)@[1,3]}
+  (( $# > 3 )) && out+=" +$(( $# - 3 ))"
+  print -r -- $out
+}
+
+# "up to date (1.2)" or "1.2 → 1.3"
+vchange() {
+  if [[ $1 == $2 ]]; then sum "up to date ${D}($2)${N}"; else sum "$1 → $2"; fi
+}
+
+# ─── steps ────────────────────────────────────────────────────────────────────
+# Each prints whatever it likes to its log, calls `sum` once for the summary
+# line, and returns 0 ok · 1 failed · 2 skipped · 3 needs your attention.
+
+s_brew() {
+  brew update || return 1
+  export HOMEBREW_NO_AUTO_UPDATE=1
+  local -a forms casks skip skipped failed needpw
+  forms=(${(f)"$(brew outdated --formula --quiet)"})
+  casks=(${(f)"$(brew outdated --cask --greedy --quiet)"})
+  # Never swap out the app this is running in, or apps that update themselves mid-session.
+  skip=(claude)
+  [[ -f $CONF/skip ]] && skip+=(${(f)"$(<$CONF/skip)"})
+  pgrep -xq ghostty && skip+=ghostty
+  skipped=(${casks:*skip})
+  casks=(${casks:|skip})
+  local c app out
+  if (( HEADLESS && $#casks )); then
+    # pairs of cask token and App.app, for every app each cask installs
+    for c app in ${(f)"$(brew info --cask --json=v2 $casks | jq -r '.casks[] | .token as $t |
+        .artifacts[] | select(.app) | .app[] | strings | "\($t)\n\(.)"')"}; do
+      pgrep -qf "/Applications/$app/Contents/MacOS/" && skipped+=$c
+    done
+    skipped=(${(u)skipped}); casks=(${casks:|skipped})
+  fi
+
+  (( $#forms )) && { brew upgrade --formula || failed+=formulae }
+  for c in $casks; do
+    out=$(brew upgrade --cask --greedy $c 2>&1 </dev/null) && { print -r -- $out; continue }
+    print -r -- $out
+    [[ $out == *(sudo|password|terminal is required)* ]] && needpw+=$c || failed+=$c
+  done
+  brew cleanup --prune=7 -q
+
+  local -a parts
+  (( $#forms )) && parts+="$#forms formulae"
+  local -a done_=(${${casks:|failed}:|needpw})
+  (( $#done_ )) && parts+="apps: $(names $done_)"
+  (( $#failed )) && parts+="${R}failed: $(names $failed)${N}"
+  (( $#needpw )) && parts+="${Y}needs password: $(names $needpw)${N}"
+  (( $#skipped )) && parts+="${D}skipped (open): $(names $skipped)${N}"
+  (( $#parts )) || parts=("up to date")
+  sum ${(j: · :)parts}
+  (( $#failed )) && return 1
+  (( $#needpw )) && return 3
+  return 0
+}
+
+s_appstore() {
+  has mas || { sum "mas not installed — brew install mas"; return 2 }
+  local -a out=(${(f)"$(mas outdated)"})
+  (( $#out )) || { sum "up to date"; return 0 }
+  # lines look like: 302584613  Kindle  (7.68 -> 7.69)
+  local l; local -a apps
+  for l in $out; do l=${${l##[[:space:]]#}#<->[[:space:]]##}; apps+=${l%%[[:space:]]##\(*}; done
+  # mas needs root to install updates.
+  (( HEADLESS )) && { sum "${Y}needs password: $(names $apps)${N}"; return 3 }
+  sudo mas upgrade || { sum "${R}upgrade failed${N} (signed in to the App Store?)"; return 1 }
+  sum "$(names $apps)"
+}
+
+s_claude() {
+  has claude || return 2
+  local before=${$(claude --version)[1]}
+  claude update </dev/null || return 1
+  vchange $before ${$(claude --version)[1]}
+}
+
+s_codex() {
+  has codex || return 2
+  local before=${$(codex --version)[-1]} latest
+  if [[ $(readlink -f =codex) == */node_modules/* ]]; then
+    latest=$(npm view @openai/codex version) || return 1
+    [[ $before == $latest ]] || npm install -g @openai/codex@latest || return 1
+  else
+    codex update </dev/null || return 1
+  fi
+  vchange $before ${$(codex --version)[-1]}
+}
+
+s_npm() {
+  has npm || return 2
+  local -a rows pkgs; local r latest
+  # location:wanted:current:latest:dependent
+  rows=(${(f)"$(npm outdated -g --parseable --depth=0)"})
+  for r in $rows; do
+    latest=${${(s.:.)r}[4]}
+    [[ $latest == @openai/codex@* || $latest == *@linked ]] && continue
+    pkgs+=$latest
+  done
+  (( $#pkgs )) || { sum "up to date"; return 0 }
+  npm install -g $pkgs || return 1
+  local p; local -a short; for p in $pkgs; do short+=${${p%@*}#@}; done
+  sum "$(names $short)"
+}
+
+s_bun() {
+  has bun || return 2
+  local before=$(bun --version)
+  bun upgrade || return 1
+  vchange $before $(bun --version)
+}
+
+s_uv() {
+  has uv || return 2
+  local out; out=$(uv tool upgrade --all 2>&1) || { print -r -- $out; return 1 }
+  print -r -- $out
+  # "Updated huggingface-hub v1.19.0 -> v1.20.0"
+  local -a up=(${${(M)${(f)out}:#Updated *}/(#b)Updated ([^ ]##)*/$match[1]})
+  (( $#up )) && sum "$(names $up)" || sum "up to date"
+}
+
+s_pipx() {
+  has pipx || return 2
+  local out; out=$(pipx upgrade-all 2>&1); local rc=$?
+  print -r -- $out
+  local -a up=(${${(M)${(f)out}:#*upgraded package *}/(#b)*upgraded package ([^ ]##)*/$match[1]})
+  (( $#up )) && sum "$(names $up)" || sum "up to date"
+  (( rc == 0 || $#up )) || return 1
+}
+
+s_rustup() {
+  has rustup || return 2
+  local out; out=$(rustup update --no-self-update 2>&1) || { print -r -- $out; return 1 }
+  print -r -- $out
+  out+=$'\n'$(rustup self update 2>&1)
+  print -r -- ${out#*$'\n'}
+  local -a up=(${${${(M)${(f)out}:#*updated - *}#*updated - }%% \(*})
+  (( $#up )) && sum "$(names $up)" || sum "up to date"
+}
+
+s_gh() {
+  has gh && [[ -n $(gh extension list 2>/dev/null) ]] || return 2
+  local out; out=$(gh extension upgrade --all 2>&1); local rc=$?
+  print -r -- $out
+  local -a up=(${${(M)${(f)out}:#*[Uu]pgraded*}})
+  (( $#up )) && sum "$#up upgraded" || sum "up to date"
+  return $rc
+}
+
+s_cursor() {
+  has cursor-agent || return 2
+  local before=${${$(readlink =cursor-agent):h}:t}
+  # Old builds' updater silently exits 1; the installer always works.
+  if ! cursor-agent update </dev/null; then
+    sum "${Y}updater broken${N} ${D}→ curl https://cursor.com/install -fsS | bash${N}"
+    return 3
+  fi
+  vchange $before ${${$(readlink =cursor-agent):h}:t}
+}
+
+s_hermes() {
+  has hermes || return 2
+  local before=${$(hermes --version | head -1)[3]}
+  timeout 300 hermes update </dev/null || return 1
+  vchange $before ${$(hermes --version | head -1)[3]}
+}
+
+s_obsidian() {
+  has obsidian || return 2
+  pgrep -xq Obsidian || { sum "open Obsidian to update plugins"; return 2 }
+  # Same thing the "Check for updates → Update all" button does, via Obsidian's own CLI.
+  local js='(async()=>{const p=app.plugins;await p.checkForUpdates();const out=[];
+    for(const u of Object.values(p.updates||{})){const id=u.manifest.id;
+      try{await p.installPlugin(u.repo,u.version,u.manifest);out.push("ok "+id)}
+      catch(e){out.push("fail "+id+" "+e.message)}}
+    return out.join("|")})()'
+  local out; out=$(obsidian eval code="$js" 2>&1) || { print -r -- $out; return 1 }
+  print -r -- $out
+  local -a lines=(${(s:|:)${out#=> }}) ok fail
+  ok=(${${(M)lines:#ok *}#ok }); fail=(${${${(M)lines:#fail *}#fail }%% *})
+  local s; (( $#ok )) && s="plugins: $(names $ok)" || s="plugins up to date"
+  (( $#fail )) && s+=" · ${R}failed: $(names $fail)${N}"
+  sum $s
+  (( $#fail == 0 ))
+}
+
+s_ollama() {
+  has ollama || return 2
+  local -a models=(${${(f)"$(ollama list | tail -n +2)"}%% *}) up
+  local m before
+  for m in $models; do
+    before=$(ollama show --modelfile $m 2>/dev/null | md5)
+    ollama pull $m || return 1
+    [[ $(ollama show --modelfile $m 2>/dev/null | md5) == $before ]] || up+=$m
+  done
+  (( $#up )) && sum "$(names $up)" || sum "up to date"
+}
+
+s_macos() {
+  local out; out=$(softwareupdate -l 2>&1)
+  print -r -- $out
+  local -a avail=(${${(M)${(f)out}:#\* Label:*}#\* Label: })
+  (( $#avail )) || { sum "up to date"; return 0 }
+  sum "${Y}available:${N} $(names $avail) ${D}→ sudo softwareupdate -ia${N}"
+  return 3
+}
+
+# ─── adopt ────────────────────────────────────────────────────────────────────
+
+adopt() {
+  # App bundle → cask token, for apps that update themselves outside brew.
+  local -A map=(
+    Arc arc  ChatGPT chatgpt  Raycast raycast  Obsidian obsidian  1Password 1password
+    'Google Chrome' google-chrome  Granola granola  'Screen Studio' screen-studio  Stats stats
+    ProtonVPN protonvpn  Ollama ollama-app
+    'Cold Turkey Blocker' cold-turkey-blocker  MediaMate mediamate  kindaVim kindavim
+    Wooshy wooshy  Supercharge supercharge  Monologue monologue  Scrolla scrolla
+  )
+  local -a managed=(${(f)"$(brew list --cask)"})
+  local app tok apps
+  print "${B}adopting apps into brew${N} ${D}(after this, \`update\` keeps them current)${N}"
+  for app tok in ${(kv)map}; do
+    [[ -d "/Applications/$app.app" ]] || continue
+    (( ${managed[(I)$tok]} )) && continue
+    # Only adopt if the cask really installs this exact app bundle.
+    apps=$(brew info --cask --json=v2 $tok 2>/dev/null |
+      jq -r '.casks[0].artifacts[] | select(.app) | .app[] | strings' 2>/dev/null)
+    if [[ $apps != *"$app.app"* ]]; then
+      printf "  ${D}–${N} %-20s ${D}no matching cask${N}\n" $app; continue
+    fi
+    if brew install --cask --adopt $tok >>$STATE/adopt.log 2>&1; then
+      printf "  ${G}✓${N} %-20s %s\n" $app $tok
+    else
+      printf "  ${R}✗${N} %-20s ${D}see %s${N}\n" $app $STATE/adopt.log
+    fi
+  done
+}
+
+# ─── runner ───────────────────────────────────────────────────────────────────
+
+typeset -A LABEL=(
+  brew "brew" appstore "app store" claude "claude" codex "codex" npm "npm globals"
+  bun "bun" uv "uv tools" pipx "pipx" rustup "rust" gh "gh extensions"
+  cursor "cursor-agent" hermes "hermes" obsidian "obsidian" ollama "ollama models"
+  macos "macOS"
+)
+
+run_step() {  # name [stdin-is-tty]
+  local name=$1 t0=$EPOCHREALTIME rc
+  SUMF=$LOGS/$name.sum
+  : >| $SUMF
+  if (( VERBOSE )); then
+    print "${D}── $LABEL[$name] ──${N}"
+    s_$name 2>&1 | tee $LOGS/$name.log; rc=${pipestatus[1]}
+  elif [[ -n $2 ]]; then
+    s_$name >$LOGS/$name.log 2>&1; rc=$?
+  else
+    s_$name >$LOGS/$name.log 2>&1 </dev/null; rc=$?
+  fi
+  print "$rc $(( EPOCHREALTIME - t0 ))" >| $LOGS/$name.done
+}
+
+show_step() {
+  local name=$1 rc secs icon s
+  read rc secs < $LOGS/$name.done
+  s=$(<$LOGS/$name.sum)
+  case $rc in
+    0) icon="${G}✓${N}"; [[ -n $s ]] || s="done" ;;
+    2) icon="${D}–${N}"; [[ -n $s ]] || s="not installed"; s="${D}$s${N}" ;;
+    3) icon="${Y}!${N}"; [[ $s == *"needs password"* ]] && NEEDPW+=$name ;;
+    *) icon="${R}✗${N}"; s="${s:-failed} ${D}($LOGS/$name.log)${N}"; FAILED+=$name ;;
+  esac
+  [[ -n $s && $s != *"up to date"* && $rc != 2 ]] && CHANGED+=$name
+  printf "  %s %-14s ${D}%4ss${N}  %s\n" $icon $LABEL[$name] ${secs%.*} $s
+}
+
+for a in $ONLY; do
+  (( $+functions[s_$a] )) || { print -u2 "update: no step called '$a' (try -h)"; exit 64 }
+done
+
+mkdir -p $STATE $CONF
+if ! mkdir $STATE/lock 2>/dev/null; then
+  print -u2 "update: already running (remove $STATE/lock if it isn't)"; exit 75
+fi
+trap 'rmdir $STATE/lock 2>/dev/null' EXIT
+trap 'exit 130' INT TERM
+
+if (( ADOPT )); then adopt; exit; fi
+
+if (( !FORCE && !$#ONLY )) && [[ -f $STATE/last ]]; then
+  mins=$(( (EPOCHSECONDS - $(<$STATE/last)) / 60 ))
+  if (( mins < COOLDOWN_H * 60 )); then
+    (( mins < 60 )) && ago="${mins}m" || ago="$(( mins / 60 ))h"
+    print "${G}✓${N} everything was updated $ago ago. nothing to do — go do the thing."
+    print "${D}  (update -f to run anyway)${N}"
+    exit 0
+  fi
+fi
+
+LOGS=$STATE/logs/$(strftime %Y-%m-%d_%H%M%S $EPOCHSECONDS)
+mkdir -p $LOGS && ln -sfn $LOGS $STATE/logs/latest
+typeset -a FAILED CHANGED NEEDPW
+T0=$EPOCHREALTIME
+
+# Keep an existing sudo ticket (from `sudo update`, or a recent sudo) alive so
+# installers don't ask again halfway through.
+SUDO_TAG=
+if (( !HEADLESS )) && sudo -n true 2>/dev/null; then
+  ( while kill -0 $$ 2>/dev/null && sudo -n true 2>/dev/null; do sleep 50; done ) &!
+  SUDO_TAG=" · sudo ✓"
+  # Homebrew clears the sudo ticket on start so it never uses one you didn't
+  # grant it. `sudo update` is that grant, so let brew reuse it for this run.
+  (( ${UPDATE_SUDO:-0} )) && export HOMEBREW_SUDO_CHECKED=1
+elif (( ${UPDATE_SUDO:-0} )); then
+  SUDO_TAG=" · ${Y}sudo ticket not reused, may ask again${N}"
+fi
+
+print "${B}update${N} ${D}$(strftime '%a %b %d %H:%M' $EPOCHSECONDS)$SUDO_TAG${N}"
+
+want() { (( !$#ONLY || ${ONLY[(I)$1]} )) }
+
+# brew first and alone: it may upgrade node/python that the other steps run on.
+want brew && { run_step brew tty; show_step brew }
+
+# Everything else in parallel. npm-based steps share one lane so they don't race.
+typeset -a LANES=("claude" "codex npm" "bun" "uv pipx" "rustup" "gh" "cursor" "hermes" "obsidian" "macos")
+(( MODELS || ${ONLY[(I)ollama]} )) && LANES+=ollama
+typeset -a lanes l
+for lane in $LANES; do
+  l=(${=lane})
+  (( $#ONLY )) && l=(${l:*ONLY})
+  (( $#l )) && lanes+="$l"
+done
+LANES=($lanes)
+for lane in $LANES; do
+  if (( VERBOSE )); then for s in ${=lane}; do run_step $s; show_step $s; done
+  else ( for s in ${=lane}; do run_step $s; done ) &
+  fi
+done
+
+# App Store in the foreground meanwhile — it may ask for a password.
+want appstore && { run_step appstore tty; show_step appstore }
+
+(( VERBOSE )) || for lane in $LANES; do
+  for s in ${=lane}; do
+    until [[ -f $LOGS/$s.done ]]; do sleep 0.2; done
+    show_step $s
+  done
+done
+wait
+
+secs=$(printf %.0f $(( EPOCHREALTIME - T0 )))
+
+notify() {
+  (( HEADLESS )) || return
+  osascript -e "display notification \"$1\" with title \"update\" sound name \"default\"" 2>/dev/null
+}
+
+print
+if (( $#FAILED )); then
+  print "${R}${#FAILED} failed${N} · ${secs}s · logs: $STATE/logs/latest"
+  notify "${(j:, :)FAILED} failed. Logs in ~/.local/state/update/logs/latest"
+  exit 1
+fi
+(( $#ONLY )) && exit 0
+if (( $#NEEDPW )); then
+  # Don't start the cooldown: the next manual `update` should finish these.
+  print "${Y}some updates need your password${N} · run ${B}update${N}"
+  notify "A few updates need your password. Run: update"
+  exit 0
+fi
+print -n $EPOCHSECONDS >| $STATE/last
+(( $#CHANGED )) && print "${G}all updated${N} ${D}· ${secs}s${N}" \
+                || print "${G}everything was already up to date${N} ${D}· ${secs}s${N}"
+print "${D}next run unlocks in ${COOLDOWN_H}h. go do the thing.${N}"

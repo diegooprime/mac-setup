@@ -14,7 +14,10 @@ fi
 echo ""
 echo "==> Stowing config files..."
 
-PACKAGES=(aerospace alacritty tmux karabiner nvim git palette sketchybar borders ghostty fastfetch)
+PACKAGES=(aerospace alacritty tmux karabiner nvim git palette sketchybar borders ghostty fastfetch update)
+
+# Real dir, so stow links the `update` script into it instead of linking all of ~/.local.
+mkdir -p "$HOME/.local/bin"
 
 for pkg in "${PACKAGES[@]}"; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then

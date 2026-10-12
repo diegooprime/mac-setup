@@ -65,6 +65,7 @@ Stow-compatible layout -- each directory mirrors `~/.config/` so you can symlink
 ├── nvim/.config/nvim/              # NvChad + lazy.nvim
 ├── karabiner/.config/karabiner/    # keyboard remapping
 ├── git/.config/git/                # git + delta config
+├── update/.local/bin/update        # one command to update everything
 ├── extras/                         # Raycast + Vimium C (manual import)
 └── assets/                         # images + keyboard layout firmware
 ```
@@ -77,6 +78,20 @@ cd mac-setup
 chmod +x setup.sh
 ./setup.sh
 ```
+
+### Update everything
+
+One command updates Homebrew packages and apps, App Store apps, Claude Code, Codex, npm/bun/uv/pipx globals, Rust, gh extensions and Obsidian plugins. Each step prints a single line, and independent steps run in parallel.
+
+```bash
+update            # run everything (no-op if it already ran in the last 12h)
+sudo update       # same, but asks for your password once up front
+update -f         # ignore the 12h cooldown
+update obsidian   # run only the named steps
+update --adopt    # one-time: hand apps installed outside brew over to brew
+```
+
+The cooldown is intentional: it keeps "let me just check for updates" from becoming a habit. It skips upgrading Ghostty while it's open, and never touches the Claude app (it updates itself). Logs are in `~/.local/state/update/logs/latest/`.
 
 ---
 
