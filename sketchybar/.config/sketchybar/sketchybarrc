@@ -100,19 +100,19 @@ sketchybar --add item battery right \
 sketchybar --add item ram right \
   --set ram \
     icon="MEM" \
-    update_freq=5 \
+    update_freq=15 \
     script="$PLUGIN_DIR/ram.sh"
 
 sketchybar --add item cpu right \
   --set cpu \
     icon="CPU" \
-    update_freq=5 \
+    update_freq=10 \
     script="$PLUGIN_DIR/cpu.sh"
 
 sketchybar --add item network right \
   --set network \
     icon="NET" \
-    update_freq=2 \
+    update_freq=10 \
     script="$PLUGIN_DIR/network.sh"
 
 # ========================

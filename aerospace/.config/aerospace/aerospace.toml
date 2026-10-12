@@ -1,4 +1,8 @@
+config-version = 2
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
+
 start-at-login = true
+automatically-unhide-macos-hidden-apps = false
 accordion-padding = 0
 enable-normalization-flatten-containers = true
 enable-normalization-opposite-orientation-for-nested-containers = true
@@ -18,18 +22,20 @@ inner.horizontal = 0
 inner.vertical = 0
 outer.left = 0
 outer.right = 0
-outer.top = 31
+outer.top = 0
 outer.bottom = 0
 
 [workspace-to-monitor-force-assignment]
 1 = 'main'
-2 = 'main'
+2 = 1
 3 = 2
 4 = 2
 7 = 2
 8 = 2
-5 = 3
+5 = 2
 6 = 3
+9 = 'VG27WQ3B'
+0 = 'VG27WQ3B'
 
 # ========================
 # MAIN MODE
@@ -43,15 +49,17 @@ ctrl-alt-cmd-shift-k = 'exec-and-forget /bin/bash ~/.config/aerospace/focus.sh u
 ctrl-alt-cmd-shift-l = 'exec-and-forget /bin/bash ~/.config/aerospace/focus.sh right'
 
 # --- Workspace switching ---
-ctrl-alt-cmd-shift-1 = ["workspace 1", "move-mouse monitor-lazy-center"]
-ctrl-alt-cmd-shift-2 = ["workspace 2", "move-mouse monitor-lazy-center"]
-ctrl-alt-cmd-shift-c = ["workspace 3", "move-mouse monitor-lazy-center"]
-ctrl-alt-cmd-shift-6 = ["workspace 4", "move-mouse monitor-lazy-center"]
-ctrl-alt-cmd-shift-7 = ["workspace 5", "move-mouse monitor-lazy-center"]
-ctrl-alt-cmd-shift-8 = ["workspace 6", "move-mouse monitor-lazy-center"]
-ctrl-alt-cmd-shift-0 = ["workspace 7", "move-mouse monitor-lazy-center"]
-ctrl-alt-cmd-shift-n = ["workspace 8", "move-mouse monitor-lazy-center"]
+ctrl-alt-cmd-shift-1 = "workspace 1"
+ctrl-alt-cmd-shift-2 = "workspace 2"
+ctrl-alt-cmd-shift-c = "workspace 3"
+ctrl-alt-cmd-shift-e = "workspace 4"
+ctrl-alt-cmd-shift-6 = ["workspace 5", "move-mouse monitor-lazy-center"]
+ctrl-alt-cmd-shift-d = "workspace 7"
+ctrl-alt-cmd-shift-n = "workspace 8"
+ctrl-alt-cmd-shift-9 = "workspace 9"
+ctrl-alt-cmd-shift-0 = "workspace 0"
 ctrl-alt-cmd-shift-minus = "workspace --wrap-around next"
+ctrl-alt-cmd-shift-t = "workspace-back-and-forth"
 
 # --- Monitor ---
 ctrl-alt-cmd-shift-space = 'focus-monitor --wrap-around next'
@@ -62,7 +70,6 @@ cmd-m = 'macos-native-minimize'
 ctrl-alt-cmd-shift-semicolon = 'fullscreen'
 ctrl-alt-cmd-shift-u = 'layout v_tiles'
 ctrl-alt-cmd-shift-z = 'layout h_tiles'
-ctrl-alt-cmd-shift-e = 'balance-sizes'
 ctrl-alt-cmd-shift-r = 'flatten-workspace-tree'
 
 # --- Service mode (hyper+slash) ---
@@ -101,9 +108,10 @@ f = 'layout floating tiling'
 6 = ['move-node-to-workspace 6', 'mode main']
 7 = ['move-node-to-workspace 7', 'mode main']
 8 = ['move-node-to-workspace 8', 'mode main']
+9 = ['move-node-to-workspace 9', 'mode main']
+0 = ['move-node-to-workspace 0', 'mode main']
 
 # Utility
-b = ['balance-sizes', 'mode main']
 r = ['flatten-workspace-tree', 'mode main']
 
 # Exit
@@ -115,6 +123,17 @@ enter = 'mode main'
 # ========================
 
 # --- Float rules ---
+
+# Whats → floating at its own size (a third of the screen); F20+W brings it to the current workspace
+[[on-window-detected]]
+if.app-id = 'com.diego.whats'
+check-further-callbacks = false
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.iWork.Numbers'
+check-further-callbacks = false
+run = 'layout floating'
 
 [[on-window-detected]]
 if.app-id = 'com.kagi.kagimacOS'
@@ -143,13 +162,16 @@ if.app-id = 'com.apple.systempreferences'
 check-further-callbacks = false
 run = 'layout floating'
 
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+if.window-title-regex-substring = '^Desktop$'
+check-further-callbacks = false
+run = 'layout floating'
+
 # --- Auto-route apps to workspaces ---
 
-# Arc → workspace 1
-[[on-window-detected]]
-if.app-id = 'company.thebrowser.Browser'
-check-further-callbacks = false
-run = 'move-node-to-workspace 1'
+# Arc intentionally has no fixed workspace assignment.
+# This lets new Arc windows stay on the currently focused workspace.
 
 # Ghostty → workspace 3
 [[on-window-detected]]
@@ -175,6 +197,12 @@ if.app-id = 'net.whatsapp.WhatsApp'
 check-further-callbacks = false
 run = ['move-node-to-workspace 2', 'move left']
 
+# WhatsFast → workspace 2, floating for manual QA
+[[on-window-detected]]
+if.app-id = 'com.diego.whatsfast'
+check-further-callbacks = false
+run = ['layout floating', 'move-node-to-workspace 2']
+
 # Spotify → workspace 2
 [[on-window-detected]]
 if.app-id = 'com.spotify.client'
@@ -183,5 +211,6 @@ run = 'move-node-to-workspace 2'
 
 # --- Catch-all: tile everything else ---
 [[on-window-detected]]
+if = 'true'
 check-further-callbacks = false
 run = "layout tiling"

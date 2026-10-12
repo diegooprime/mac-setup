@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 source "$HOME/.config/palette/colors.sh"
 
-read -r USER SYS IDLE <<EOF
-$(top -l 2 -n 0 | awk '/^CPU usage:/ {gsub(/%|,/, ""); user=$3; sys=$5; idle=$7} END {printf "%.0f %.0f %.0f", user+0, sys+0, idle+0}')
-EOF
-
-CPU=$((USER + SYS))
+CORES=$(sysctl -n hw.ncpu)
+CPU=$(ps -A -o %cpu= | awk -v cores="$CORES" '{sum += $1} END {printf "%.0f", sum / cores}')
 [ "$CPU" -gt 100 ] && CPU=100
 
 if [ "$CPU" -gt 85 ]; then
