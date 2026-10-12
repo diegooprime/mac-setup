@@ -124,7 +124,6 @@ chmod +x setup.sh
 | `w` | Kill pane |
 | `q` | Kill window |
 | `x` | Kill session |
-| `f` | tmux-fingers (Vimium-style hint labels for copying) |
 
 ### Neovim
 
