@@ -30,7 +30,7 @@ Keyboard-driven everything. Muscle memory over menus.
 
 **System Tools**: Aerospace (tiling WM), Karabiner Elements, CleanshotX, MonitorControl, Hammerspoon, Cold Turkey
 
-**CLI Power Tools**: bat, eza, fd, fzf, ripgrep, lazygit, delta, zoxide, yazi, bottom, dust, hyperfine, fabric
+**CLI Power Tools**: eza, fd, fzf, ripgrep, lazygit, delta, zoxide, yazi, bottom, dust, hyperfine, fabric
 
 **Browser Extensions**: Vimium C, Hotkey Router, Video Speed Controller, Untrap for YouTube, Cold Turkey Blocker
 
